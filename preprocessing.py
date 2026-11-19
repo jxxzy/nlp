@@ -8,6 +8,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 import io
 import os
+from pathlib import Path
 import re
 import requests
 import csv
@@ -17,13 +18,15 @@ import pandas as pd
 import random
 import pickle
 
+DATASET_DIR = Path(__file__).resolve().parent / 'dataset'
+
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
 punct_re_escape = re.compile('[%s]' % re.escape('!"#$%&()*+,./:;<=>?@[\\]^_`{|}~'))
 unknowns = ["gak paham","kurang ngerti","I don't know"]
 
-list_indonesia_slang = pd.read_csv('./dataset/daftar-slang-bahasa-indonesia.csv', header=None).to_numpy()
+list_indonesia_slang = pd.read_csv(DATASET_DIR / 'daftar-slang-bahasa-indonesia.csv', header=None, dtype=str).dropna().to_numpy()
 
 data_slang = {}
 for key, value in list_indonesia_slang:
@@ -56,7 +59,7 @@ def normalize_sentence(sentence):
     return punct_re_escape.sub('',normal_sentence)
   return sentence
 
-df = pd.read_csv('./dataset/qa.csv', sep='|',usecols= ['question','answer'])
+df = pd.read_csv(DATASET_DIR / 'qa.csv', sep='|', usecols=['question', 'answer'], dtype=str).dropna(subset=['question', 'answer'])
 df.head()
 
 question_length = {}
@@ -98,7 +101,7 @@ df_answer_length.describe()
 data_length = 0
 
 #filename = open('./dataset/clean_qa.txt', 'a+')
-filename= './dataset/clean_qa.txt'
+filename = DATASET_DIR / 'clean_qa.txt'
 with open(filename, 'w', encoding='utf-8') as f:
   for index, row in df.iterrows():
     question = normalize_sentence(str(row['question']))
